@@ -20,7 +20,7 @@ const router = createBrowserRouter([
             {
                 index: true,
                 Component: HomePage,
-                loader: homePageLoader
+                loader: protectedLoader
             },
             {
                 path: "new",
