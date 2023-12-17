@@ -89,13 +89,17 @@ export async function loginAction({request}) {
     }
 
     try {
-        await fakeAuthProvider.signin(username, password);
+        let result = await fakeAuthProvider.signIn(username, password);
+
+        if (result.success) {
+            let redirectTo = formData.get("redirectTo")
+            return redirect(redirectTo || "/");
+        } else {
+            alert(result.error.message ? result.error.message : "Failed")
+        }
     } catch (error) {
-        return {
-            error: "Invalid login attempt",
-        };
+        alert(error.message ? error.message : "Failed")
     }
 
-    let redirectTo = formData.get("redirectTo")
-    return redirect(redirectTo || "/");
+    return null
 }

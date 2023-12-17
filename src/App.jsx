@@ -44,7 +44,7 @@ const router = createBrowserRouter([
     {
         path: "/logout",
         async action() {
-            await fakeAuthProvider.signout();
+            await fakeAuthProvider.signOut();
             return redirect("/");
         },
     },
