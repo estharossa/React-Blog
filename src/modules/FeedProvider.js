@@ -26,13 +26,25 @@ export async function getPosts() {
     }
 }
 
-export async function createPost({title, content}) {
-    let id = Math.random().toString(36).substring(2, 9);
-    let post = {id, title, content};
-    let posts = await getPosts();
-    posts.unshift(post);
-    await set(posts);
-    return post;
+export async function createPost({title, body}) {
+    const apiUrl = 'http://127.0.0.1:8000/api/users/posts/';
+    const accessToken = fakeAuthProvider.accessToken;
+
+    try {
+        const newPost = {title, body};
+
+        const response = await axios.post(apiUrl, newPost, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Error creating post:', error);
+        throw error;
+    }
 }
 
 export async function getPost(id) {

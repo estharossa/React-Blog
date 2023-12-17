@@ -18,7 +18,7 @@ export async function action({request}) {
     const formData = await request.formData();
     await createPost({
         title: formData.get("title"),
-        content: formData.get("content"),
+        body: formData.get("content"),
     });
     return redirect(`/`);
 }
