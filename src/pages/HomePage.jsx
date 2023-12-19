@@ -1,15 +1,12 @@
 import {getPosts} from "../modules/FeedProvider.js";
-import {useLoaderData} from "react-router-dom";
-import {Card, CardBody, CardHeader, Divider} from "@nextui-org/react";
+import {useNavigate} from "react-router-dom";
+import {Button, Card, CardBody, CardHeader, Divider} from "@nextui-org/react";
 import {fakeAuthProvider} from "../modules/AuthProvider.js";
 import {useEffect, useState} from "react";
 
-export async function loader() {
-    return getPosts();
-}
-
 export default function HomePage() {
     if (fakeAuthProvider.isAuthenticated) {
+        const navigate = useNavigate();
         const [posts, setPosts] = useState([]);
 
         useEffect(() => {
@@ -36,10 +33,14 @@ export default function HomePage() {
                                 <CardHeader className="flex space-x-4 justify-between items-center">
                                     <p className="font-bold text-lg">{post.title}</p>
                                 </CardHeader>
-                                <Divider />
+                                <Divider/>
                                 <CardBody className="p-3">
                                     <p>{post.body}</p>
                                 </CardBody>
+                                <Button color="success" onClick={() => navigate(`post/${post.id}`)}
+                                        className="start-3/4">
+                                    Read more
+                                </Button>
                             </Card>
                         ))
                     )}

@@ -3,10 +3,11 @@ import {NextUIProvider} from "@nextui-org/react";
 import {fakeAuthProvider} from "./modules/AuthProvider.js";
 
 import Layout from "./components/Layout.jsx";
-import HomePage, {loader as homePageLoader} from "./pages/HomePage.jsx";
+import HomePage from "./pages/HomePage.jsx";
 import NewPost, {action as newPostAction} from "./pages/NewPostPage.jsx";
 import LoginPage, {loginAction, loginLoader} from "./pages/LoginPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
+import PostDetails from "./pages/PostDetails.jsx";
 
 const router = createBrowserRouter([
     {
@@ -38,6 +39,11 @@ const router = createBrowserRouter([
                 path: "profile",
                 loader: protectedLoader,
                 Component: ProfilePage,
+            },
+            {
+                path: "post/:postId",
+                loader: protectedLoader,
+                Component: PostDetails
             },
         ],
     },
