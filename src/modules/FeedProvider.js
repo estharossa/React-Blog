@@ -48,9 +48,20 @@ export async function createPost({title, body}) {
 }
 
 export async function getPost(id) {
-    let posts = await localforage.getItem("posts");
-    let post = posts.find((post) => post.id === id);
-    return post ?? null;
+    const accessToken = fakeAuthProvider.accessToken;
+
+    try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/users/posts/${id}/`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching post:', error);
+        return null;
+    }
 }
 
 export async function deletePost(id) {

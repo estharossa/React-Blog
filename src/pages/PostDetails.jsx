@@ -1,15 +1,28 @@
-import {getPosts} from "../modules/FeedProvider.js";
-import {useLoaderData} from "react-router-dom";
+import {getPost} from "../modules/FeedProvider.js";
 import {Card, CardBody, CardHeader, Divider} from "@nextui-org/react";
-import {fakeAuthProvider} from "../modules/AuthProvider.js";
 import {useEffect, useState} from "react";
+import {useParams} from "react-router-dom";
 
 
 export default function PostDetails() {
-    let post = {
-        id: 4,
-        title: "MYTEST",
-        body: "ASDASDAS"
+    const { postId } = useParams();
+    const [post, setPost] = useState(null);
+
+    useEffect(() => {
+        async function fetchPostDetails() {
+            try {
+                const postDetails = await getPost(postId);
+                setPost(postDetails);
+            } catch (error) {
+                console.error('Error fetching post details:', error);
+            }
+        }
+
+        fetchPostDetails();
+    }, [postId]);
+
+    if (!post) {
+        return <p>Loading...</p>;
     }
 
     return (
