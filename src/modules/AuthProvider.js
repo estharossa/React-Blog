@@ -35,6 +35,32 @@ export const fakeAuthProvider = {
         }
     },
 
+    async register(username, password, email) {
+        const registerUrl = 'http://127.0.0.1:8000/api/register/';
+
+        try {
+            const response = await axios.post(registerUrl, {
+                username,
+                password,
+                email
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log(response)
+            if (!response || !response.data) {
+                throw new Error('Authentication failed');
+            }
+
+            return {success: true};
+        } catch (error) {
+            console.error('Authentication failed:', error);
+            return {success: false, error: error.message};
+        }
+    },
+
     async signOut() {
         await new Promise((r) => setTimeout(r, 500));
 

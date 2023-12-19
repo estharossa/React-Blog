@@ -1,16 +1,25 @@
-import {Form, redirect, useActionData, useLocation, useNavigation} from "react-router-dom";
-import {fakeAuthProvider} from "../modules/AuthProvider.js";
-import {Button, Card, CardBody, Input} from "@nextui-org/react";
+import {useState} from 'react';
+import {Form, redirect, useActionData, useLocation, useNavigation,} from 'react-router-dom';
+import {fakeAuthProvider} from '../modules/AuthProvider.js';
+import {Button, Card, CardBody, Input} from '@nextui-org/react';
 
 export default function LoginPage() {
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [registrationError, setRegistrationError] = useState(null);
+
     let location = useLocation();
     let params = new URLSearchParams(location.search);
-    let from = params.get("from") || "/";
+    let from = params.get('from') || '/';
 
     let navigation = useNavigation();
-    let isLoggingIn = navigation.formData?.get("username") != null;
+    let isLoggingIn = navigation.formData?.get('username') != null;
 
-    let actionData = useActionData()
+    let actionData = useActionData();
+
+    const handleToggleMode = () => {
+        setIsRegistering((prevMode) => !prevMode);
+        setRegistrationError(null); // Reset registration error on mode toggle
+    };
 
     return (
         <div className="mt-48">
@@ -23,40 +32,73 @@ export default function LoginPage() {
                 >
                     <CardBody>
                         {actionData && actionData.error ? (
-                            <div className="text-red-500 text-center">{actionData.error}</div>
+                            <div className="text-red-500 text-center">
+                                {actionData.error}
+                            </div>
                         ) : null}
-                        <Form method="post" replace className="space-y-3">
-                            <input type="hidden" name="redirectTo" value={from}/>
+                        <Form
+                            method="post"
+                            replace
+                            className="space-y-3"
+                        >
+                            {isRegistering && (
+                                <Input type="email" name="email" label="Email"/>
+                            )}
+                            <input type="hidden" name="isRegistering" value={isRegistering}/>
                             <Input type="username" name="username" label="Username"/>
                             <Input type="password" name="password" label="Password"/>
-                            <Button type="submit" size="lg" color="primary"
-                                    className="w-full" isLoading={isLoggingIn}
-                                    spinner={
-                                        <svg
-                                            className="animate-spin h-5 w-5 text-current"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <circle
-                                                className="opacity-25"
-                                                cx="12"
-                                                cy="12"
-                                                r="10"
-                                                stroke="currentColor"
-                                                strokeWidth="4"
-                                            />
-                                            <path
-                                                className="opacity-75"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
-                                    }
-                            >
-                                Login
-                            </Button>
+                            {isRegistering ? (
+                                <Button
+                                    type="submit"
+                                    size="lg"
+                                    color="primary"
+                                    className="w-full"
+                                    isLoading={isLoggingIn}
+                                >
+                                    Register
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="submit"
+                                    size="lg"
+                                    color="primary"
+                                    className="w-full"
+                                    isLoading={isLoggingIn}
+                                >
+                                    Login
+                                </Button>
+                            )}
                         </Form>
+                        {!isRegistering ? (
+                            <div className="text-center mt-4">
+                <span>
+                  Not have an account?{' '}
+                    <span
+                        onClick={handleToggleMode}
+                        className="text-primary hover:underline cursor-pointer"
+                    >
+                    Register
+                  </span>
+                </span>
+                            </div>
+                        ) : (
+                            <div className="text-center mt-4">
+                <span>
+                  Already have an account?{' '}
+                    <span
+                        onClick={handleToggleMode}
+                        className="text-primary hover:underline cursor-pointer"
+                    >
+                    Login
+                  </span>
+                </span>
+                            </div>
+                        )}
+                        {registrationError && (
+                            <div className="text-red-500 text-center mt-4">
+                                {registrationError}
+                            </div>
+                        )}
                     </CardBody>
                 </Card>
             </div>
@@ -73,33 +115,44 @@ export async function loginLoader() {
 
 export async function loginAction({request}) {
     let formData = await request.formData();
-    let username = formData.get("username")
-    let password = formData.get("password")
+    let username = formData.get('username');
+    let password = formData.get('password');
 
     if (!username) {
         return {
-            error: "You must provide a username to log in",
+            error: 'You must provide a username to log in or register',
         };
     }
 
     if (!password) {
         return {
-            error: "You must provide a password to log in",
+            error: 'You must provide a password to log in or register',
         };
     }
 
     try {
-        let result = await fakeAuthProvider.signIn(username, password);
+        let redirectTo = formData.get('redirectTo');
+        let result;
+
+        if (formData.get('isRegistering') === 'true') {
+            let email = formData.get('email');
+            result = await fakeAuthProvider.register(username, password, email);
+
+            if (result.success) {
+                result = await fakeAuthProvider.signIn(username, password);
+            }
+        } else {
+            result = await fakeAuthProvider.signIn(username, password);
+        }
 
         if (result.success) {
-            let redirectTo = formData.get("redirectTo")
-            return redirect(redirectTo || "/");
+            return redirect(redirectTo || '/');
         } else {
-            alert(result.error.message ? result.error.message : "Failed")
+            alert(result.error.message ? result.error.message : 'Failed');
         }
     } catch (error) {
-        alert(error.message ? error.message : "Failed")
+        alert(error.message ? error.message : 'Failed');
     }
 
-    return null
+    return null;
 }
